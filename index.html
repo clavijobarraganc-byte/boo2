@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="theme-color" content="#0b1220">
+  <title>Pacientes | Clínica Camilo's</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,300,0,0" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; --ink:#0b1220; --accent:#0d9488; --line:rgb(15 23 42 / .07); }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; color: var(--ink); font-family: 'Inter', system-ui, sans-serif;
+      background:
+        radial-gradient(1100px 520px at 78% -10%, rgba(13,148,136,.10), transparent 60%),
+        radial-gradient(900px 480px at 8% 0%, rgba(99,102,241,.08), transparent 55%),
+        #f5f7fa;
+    }
+    h1,h2,h3,.display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -.015em; }
+    .material-symbols-outlined { font-size: 21px; line-height: 1; vertical-align: middle; font-variation-settings:'opsz' 20,'wght' 300; }
+    ::selection { background: rgba(13,148,136,.18); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; background-clip: content-box; }
+
+    /* ---------- Superficie ---------- */
+    .sidebar {
+      background:
+        radial-gradient(420px 220px at 100% 0%, rgba(20,184,166,.22), transparent 70%),
+        radial-gradient(320px 200px at 0% 100%, rgba(79,70,229,.20), transparent 70%),
+        linear-gradient(170deg, #0b1220 0%, #0e1729 55%, #0b1220 100%);
+      box-shadow: 24px 0 60px -40px rgba(8,15,30,.9);
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 18px 44px -30px rgba(15,23,42,.45);
+    }
+    .hairline { border-color: var(--line); }
+
+    /* ---------- Navegación ---------- */
+    .nav-link {
+      position: relative; display: flex; align-items: center; gap: 11px;
+      border-radius: 13px; padding: 10px 12px; font-size: 14px; font-weight: 600;
+      color: #a9b6c7; transition: color .16s ease, background-color .16s ease;
+    }
+    .nav-link .material-symbols-outlined { font-size: 20px; color: #7f8ea3; transition: color .16s ease; }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,.055); }
+    .nav-link:hover .material-symbols-outlined { color: #99f6e4; }
+    .nav-link.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(45,212,191,.18), rgba(45,212,191,.03));
+      box-shadow: inset 0 0 0 1px rgba(45,212,191,.22);
+    }
+    .nav-link.active .material-symbols-outlined { color: #5eead4; }
+    .nav-link.active::before {
+      content: ""; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+      height: 20px; width: 3px; border-radius: 0 4px 4px 0;
+      background: linear-gradient(#2dd4bf, #34d399); box-shadow: 0 0 12px rgba(45,212,191,.8);
+    }
+
+    /* ---------- Controles ---------- */
+    .field {
+      width: 100%; border: 1px solid #e3e9f0; border-radius: 12px;
+      background: #f8fafc; padding: 11px 13px; color: var(--ink); font-size: 14px;
+      outline: none; transition: border-color .16s, box-shadow .16s, background-color .16s;
+    }
+    .field::placeholder { color: #9aa8b8; }
+    .field:hover { background: #fff; }
+    .field:focus { background: #fff; border-color: #14b8a6; box-shadow: 0 0 0 4px rgba(20,184,166,.12); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border-radius: 12px; padding: 10px 15px; font-size: 14px; font-weight: 600;
+      transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, color .16s ease;
+      white-space: nowrap; border: 1px solid transparent;
+    }
+    .btn:disabled, .btn[disabled] { opacity: .45; cursor: not-allowed; transform: none !important; box-shadow: none; }
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #0d9488 0%, #0f9d8f 45%, #10b981 100%);
+      box-shadow: 0 10px 24px -12px rgba(13,148,136,.85), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -14px rgba(13,148,136,.9); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-quiet { background: #fff; color: #334155; border-color: #e3e9f0; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+    .btn-quiet:hover { background: #f8fafc; color: #0f766e; border-color: #cdeee8; }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center; height: 34px; width: 34px;
+      border-radius: 10px; color: #64748b; background: transparent; transition: .16s ease;
+    }
+    .icon-btn .material-symbols-outlined { font-size: 19px; }
+    .icon-btn:hover { background: #f1f5f9; color: #0f766e; }
+    .icon-btn-danger:hover { background: #fff1f2; color: #e11d48; }
+
+    /* ---------- Estados ---------- */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;
+      padding: 4px 10px; font-size: 11px; font-weight: 700; border: 1px solid transparent; white-space: nowrap;
+    }
+    .badge::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; opacity: .8; }
+    .row-hover:hover { background: #f8fbfb; }
+    .toast { animation: slide-in .24s cubic-bezier(.22,1,.36,1); }
+    @keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-panel { animation: modal-pop .22s cubic-bezier(.22,1,.36,1); }
+    @keyframes modal-pop { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+    .skeleton { background: linear-gradient(90deg, #eef2f6 25%, #f7f9fb 37%, #eef2f6 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+    .fade-up { animation: fade-up .4s ease both; }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+    @media (max-width: 767px) {
+      .sidebar { transform: translateX(-100%); transition: transform .26s cubic-bezier(.22,1,.36,1); }
+      .sidebar.open { transform: translateX(0); }
+    }
+    @media print {
+      .sidebar, .topbar, .toolbar, .no-print, .row-actions, #sidebar-overlay { display: none !important; }
+      .main-wrap { margin: 0 !important; }
+      body { background: #fff; }
+      main { padding: 0 !important; }
+      .card { box-shadow: none; border-color: #e2e8f0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+  <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-[2px] md:hidden"></div>
+
+  <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 flex w-[268px] flex-col justify-between overflow-y-auto px-4 py-5 text-white">
+    <div>
+      <a href="/" class="mb-8 flex items-center gap-3 rounded-2xl px-2 py-1">
+        <span class="flex h-11 w-11 items-center justify-center rounded-[14px] bg-gradient-to-br from-teal-300 to-emerald-400 text-slate-900 shadow-lg shadow-emerald-500/25">
+          <span class="material-symbols-outlined text-[26px]">health_and_safety</span>
+        </span>
+        <span class="leading-tight">
+          <span class="block text-[15px] font-bold tracking-tight">Clínica Camilo's</span>
+          <span class="text-[11px] font-medium tracking-wide text-teal-200/70">Portal clínico</span>
+        </span>
+      </a>
+
+      <p class="mb-2 px-3 text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Espacio de trabajo</p>
+      <nav class="space-y-1" aria-label="Navegación principal">
+        <a href="#citas" class="nav-link" data-section="citas"><span class="material-symbols-outlined">event</span><span>Citas</span></a>
+        <a href="#consultorios" class="nav-link" data-section="consultorios"><span class="material-symbols-outlined">meeting_room</span><span>Consultorios</span></a>
+        <a href="#medicos" class="nav-link" data-section="medicos"><span class="material-symbols-outlined">stethoscope</span><span>Médicos</span></a>
+        <a href="#pacientes" class="nav-link active" data-section="pacientes" aria-current="page"><span class="material-symbols-outlined">groups</span><span>Pacientes</span></a>
+        <a href="#tratamientos" class="nav-link" data-section="tratamientos"><span class="material-symbols-outlined">medical_services</span><span>Tratamientos</span></a>
+      </nav>
+
+      <div class="mt-6 rounded-2xl border border-white/8 bg-white/[.04] p-4 backdrop-blur">
+        <div class="flex items-center gap-2 text-[13px] font-semibold text-teal-100">
+          <span class="material-symbols-outlined text-[18px] text-emerald-300">verified_user</span>
+          Conexión segura
+        </div>
+        <p class="mt-2 text-[11.5px] leading-5 text-slate-400">Los datos se consultan directamente desde el registro de la clínica.</p>
+      </div>
+    </div>
+
+    <div class="mt-6 border-t border-white/8 pt-4">
+      <div class="flex items-center gap-3 px-2">
+        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-[13px] font-extrabold text-slate-900">{{ username[:1]|upper }}</span>
+        <span class="min-w-0 leading-tight">
+          <span class="block truncate text-[13px] font-semibold text-white">{{ username }}</span>
+          <span class="text-[11px] text-slate-400">Sesión activa</span>
+        </span>
+      </div>
+      <p class="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.14em] text-slate-500" title="Base de datos donde se guardan los cambios">
+        <span class="material-symbols-outlined text-[13px]">database</span>BD: {{ db_name }}</p>
+      <form action="{{ url_for('logout') }}" method="post" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-slate-300 transition hover:bg-white/8 hover:text-white" type="submit">
+          <span class="material-symbols-outlined text-[18px]">logout</span>Cerrar sesión
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="main-wrap min-h-screen md:ml-[268px]">
+    <header class="topbar sticky top-0 z-30 flex h-[72px] items-center justify-between gap-4 border-b border-slate-200/70 bg-white/80 px-4 backdrop-blur-xl md:px-8">
+      <div class="flex min-w-0 items-center gap-3">
+        <button id="menu-toggle" class="icon-btn md:hidden" type="button" aria-label="Abrir menú"><span class="material-symbols-outlined">menu</span></button>
+        <div class="min-w-0">
+          <p class="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-400 sm:block">Panel profesional</p>
+          <p id="header-title" class="truncate text-[15px] font-bold text-slate-800">Gestión de pacientes</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="hidden items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700 sm:inline-flex">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>En línea
+        </span>
+        <div class="hidden text-right sm:block">
+          <p class="text-[13px] font-bold leading-tight text-slate-800">{{ username }}</p>
+          <p class="text-[11px] text-slate-400">Personal autorizado</p>
+        </div>
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-[13px] font-extrabold text-white shadow-md shadow-teal-500/25 ring-2 ring-white">{{ username[:1]|upper }}</div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-[1480px] px-4 py-6 md:px-8 md:py-8">
+      <div id="patients-view" class="fade-up">
+        <section class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <span class="inline-flex items-center gap-2 rounded-full border border-teal-200/70 bg-teal-50/80 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[.14em] text-teal-800">
+              <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>Archivo clínico general
+            </span>
+            <h1 class="mt-3 text-[30px] font-extrabold leading-[1.1] text-slate-900 md:text-[38px]">
+              Directorio de <span class="bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-500 bg-clip-text text-transparent">pacientes</span>
+            </h1>
+            <p class="mt-2 max-w-xl text-[14px] leading-6 text-slate-500 md:text-[15px]">Consulta, filtra y administra los registros de la clínica desde un único lugar.</p>
+          </div>
+          <button id="add-button" class="btn btn-primary self-start sm:self-auto" type="button">
+            <span class="material-symbols-outlined text-[20px]">person_add</span>Nuevo paciente
+          </button>
+        </section>
+
+        <section class="mb-6 grid gap-4 sm:grid-cols-2">
+          <article class="card relative overflow-hidden p-5 md:p-6">
+            <div class="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-teal-500/10 blur-2xl"></div>
+            <div class="relative flex items-start justify-between gap-4">
+              <div>
+                <p class="text-[12.5px] font-semibold text-slate-500">Pacientes registrados</p>
+                <p id="patient-count" class="mt-2 font-display text-[34px] font-extrabold leading-none tracking-tight text-slate-900 tabular-nums md:text-[38px]">—</p>
+                <p class="mt-2 text-[11.5px] font-medium text-slate-400">Total en la base de datos</p>
+              </div>
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white shadow-lg shadow-teal-500/25">
+                <span class="material-symbols-outlined">groups</span>
+              </span>
+            </div>
+          </article>
+          <article class="card relative overflow-hidden p-5 md:p-6">
+            <div class="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-indigo-500/10 blur-2xl"></div>
+            <div class="relative flex items-start justify-between gap-4">
+              <div>
+                <p class="text-[12.5px] font-semibold text-slate-500">Coincidencias</p>
+                <p id="match-count" class="mt-2 font-display text-[34px] font-extrabold leading-none tracking-tight text-indigo-600 tabular-nums md:text-[38px]">—</p>
+                <p class="mt-2 text-[11.5px] font-medium text-slate-400">Según tu búsqueda actual</p>
+              </div>
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
+                <span class="material-symbols-outlined">manage_search</span>
+              </span>
+            </div>
+          </article>
+        </section>
+
+        <div id="notice" class="mb-4 hidden rounded-xl border border-l-4 px-4 py-3 text-sm font-semibold" role="status" aria-live="polite"></div>
+
+        <section class="card overflow-hidden">
+          <div class="toolbar flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-center md:justify-between md:p-5">
+            <label class="relative block w-full md:max-w-sm">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-slate-400">search</span>
+              <input id="search-input" class="field pl-10" type="search" placeholder="Buscar por nombre, correo o ID…" autocomplete="off" aria-label="Buscar pacientes">
+            </label>
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="refresh-button" class="btn btn-quiet" type="button"><span class="material-symbols-outlined text-[19px]">refresh</span><span class="hidden sm:inline">Actualizar</span></button>
+              <button id="csv-button" class="btn btn-quiet" type="button"><span class="material-symbols-outlined text-[19px]">table_view</span>Excel / CSV</button>
+              <button id="pdf-button" class="btn btn-quiet" type="button"><span class="material-symbols-outlined text-[19px]">picture_as_pdf</span>Imprimir / PDF</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[690px] text-left">
+              <thead class="bg-slate-50/80 text-[10.5px] uppercase tracking-[.14em] text-slate-500">
+                <tr>
+                  <th class="px-5 py-3.5 font-bold">Paciente</th>
+                  <th class="px-5 py-3.5 font-bold">Correo electrónico</th>
+                  <th class="px-5 py-3.5 text-right font-bold">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="patients-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+            <div id="empty-state" class="hidden px-6 py-16 text-center">
+              <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 ring-1 ring-slate-100"><span class="material-symbols-outlined text-[34px]">person_search</span></span>
+              <p id="empty-title" class="mt-4 text-[15px] font-bold text-slate-700">No hay pacientes todavía</p>
+              <p id="empty-description" class="mt-1 text-sm text-slate-500">Agrega el primer registro para empezar.</p>
+            </div>
+            <div id="loading-state" class="px-5 py-5">
+              <div class="space-y-3">
+                <div class="skeleton h-11 w-full"></div>
+                <div class="skeleton h-11 w-full"></div>
+                <div class="skeleton h-11 w-11/12"></div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 text-[13px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p id="results-summary">Conectando con la base de datos…</p>
+            <div class="flex items-center gap-2">
+              <label for="page-size" class="text-[11.5px] font-medium text-slate-400">Filas</label>
+              <select id="page-size" class="field w-auto rounded-lg py-1.5 pl-2 pr-7 text-[12.5px]">
+                <option value="10">10</option><option value="25">25</option><option value="50">50</option>
+              </select>
+              <button id="prev-page" class="btn btn-quiet h-8 w-8 !p-0 text-base" type="button" aria-label="Página anterior">‹</button>
+              <span id="page-indicator" class="min-w-12 text-center text-[12px] font-bold text-slate-600 tabular-nums">1 / 1</span>
+              <button id="next-page" class="btn btn-quiet h-8 w-8 !p-0 text-base" type="button" aria-label="Página siguiente">›</button>
+            </div>
+          </div>
+        </section>
+        <p class="mt-6 text-center text-[11px] text-slate-400">Clínica Camilo's · Acceso restringido · Datos gestionados de forma segura</p>
+      </div>
+
+      <section id="module-view" class="hidden fade-up">
+        <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <span class="inline-flex items-center gap-2 rounded-full border border-indigo-200/70 bg-indigo-50/80 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[.14em] text-indigo-800">
+              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>Administración clínica
+            </span>
+            <h1 id="module-title" class="mt-3 text-[30px] font-extrabold leading-[1.1] text-slate-900 md:text-[38px]"></h1>
+            <p id="module-description" class="mt-2 max-w-xl text-[14px] leading-6 text-slate-500 md:text-[15px]"></p>
+          </div>
+          <button id="module-add-button" class="btn btn-primary self-start sm:self-auto" type="button">
+            <span class="material-symbols-outlined text-[20px]">add</span><span id="module-add-label">Nuevo registro</span>
+          </button>
+        </div>
+
+        <div id="module-notice" class="mb-4 hidden rounded-xl border border-l-4 px-4 py-3 text-sm font-semibold" role="status" aria-live="polite"></div>
+
+        <section class="card overflow-hidden">
+          <div class="toolbar flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-center md:justify-between md:p-5">
+            <label class="relative block w-full md:max-w-sm">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-slate-400">search</span>
+              <input id="module-search" class="field pl-10" type="search" placeholder="Buscar registros…" autocomplete="off" aria-label="Buscar registros">
+            </label>
+            <button id="module-refresh" class="btn btn-quiet self-start" type="button"><span class="material-symbols-outlined text-[19px]">refresh</span>Actualizar</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[680px] text-left">
+              <thead id="module-columns" class="bg-slate-50/80 text-[10.5px] uppercase tracking-[.14em] text-slate-500"></thead>
+              <tbody id="module-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+            <div id="module-empty" class="hidden px-6 py-16 text-center">
+              <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 ring-1 ring-slate-100"><span class="material-symbols-outlined text-[34px]">manage_search</span></span>
+              <p id="module-empty-title" class="mt-4 text-[15px] font-bold text-slate-700">Sin registros</p>
+              <p class="mt-1 text-sm text-slate-500">Agrega el primer registro para empezar.</p>
+            </div>
+          </div>
+          <div class="border-t border-slate-100 px-5 py-4 text-[13px] text-slate-500"><p id="module-summary"></p></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="module-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-labelledby="module-modal-title">
+    <div class="modal-panel max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[24px] border border-white/60 bg-white p-6 shadow-2xl md:p-7">
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100"><span class="material-symbols-outlined text-[21px]">edit_note</span></span>
+          <div>
+            <p class="text-[10.5px] font-bold uppercase tracking-[.14em] text-slate-400">Administración clínica</p>
+            <h2 id="module-modal-title" class="mt-0.5 text-[22px] font-extrabold text-slate-900"></h2>
+            <p class="mt-1 text-[13px] text-slate-500">Completa los datos del registro.</p>
+          </div>
+        </div>
+        <button id="module-modal-close" class="icon-btn" type="button" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form id="module-form" class="space-y-4" novalidate>
+        <div id="module-form-fields" class="grid gap-4 sm:grid-cols-2"></div>
+        <p class="text-[11.5px] text-slate-400">Los campos marcados con * son obligatorios.</p>
+        <div class="sticky bottom-0 -mx-6 flex justify-end gap-2 border-t border-slate-100 bg-white/95 px-6 pb-1 pt-4 backdrop-blur md:-mx-7 md:px-7">
+          <button id="module-cancel" class="btn btn-quiet" type="button">Cancelar</button>
+          <button id="module-save" class="btn btn-primary" type="submit"><span class="material-symbols-outlined text-[19px]">save</span>Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="patient-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-panel max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[24px] border border-white/60 bg-white p-6 shadow-2xl md:p-7">
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 ring-1 ring-teal-100"><span class="material-symbols-outlined text-[21px]">badge</span></span>
+          <div>
+            <p id="modal-eyebrow" class="text-[10.5px] font-bold uppercase tracking-[.14em] text-slate-400">Directorio de pacientes</p>
+            <h2 id="modal-title" class="mt-0.5 text-[22px] font-extrabold text-slate-900">Nuevo paciente</h2>
+            <p class="mt-1 text-[13px] text-slate-500">Completa los datos para guardar el registro.</p>
+          </div>
+        </div>
+        <button id="modal-close" class="icon-btn" type="button" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form id="patient-form" class="space-y-4" novalidate>
+        <div><label for="nombre" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Nombre <span class="text-rose-500">*</span></label><input id="nombre" name="nombre" class="field" maxlength="100" autocomplete="given-name" required placeholder="Ej. Ana María"></div>
+        <div><label for="apellido" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Apellido <span class="text-rose-500">*</span></label><input id="apellido" name="apellido" class="field" maxlength="100" autocomplete="family-name" required placeholder="Ej. García López"></div>
+        <div><label for="correo" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Correo electrónico <span class="text-rose-500">*</span></label><input id="correo" name="correo" class="field" type="email" maxlength="254" autocomplete="email" required placeholder="nombre@ejemplo.com"></div>
+        <p class="text-[11.5px] text-slate-400">Los campos marcados con * son obligatorios.</p>
+        <div class="sticky bottom-0 -mx-6 flex justify-end gap-2 border-t border-slate-100 bg-white/95 px-6 pb-1 pt-4 backdrop-blur md:-mx-7 md:px-7">
+          <button id="cancel-button" class="btn btn-quiet" type="button">Cancelar</button>
+          <button id="save-button" class="btn btn-primary" type="submit"><span class="material-symbols-outlined text-[19px]">save</span>Guardar paciente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      const body = document.getElementById('patients-body');
+      const searchInput = document.getElementById('search-input');
+      const modal = document.getElementById('patient-modal');
+      const form = document.getElementById('patient-form');
+      const notice = document.getElementById('notice');
+      const pageSize = document.getElementById('page-size');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      let patients = [];
+      let totalPatients = 0;
+      let page = 1;
+      let editingId = null;
+      let noticeTimer;
+      let searchTimer;
+      const moduleDefinitions = {
+        citas: {
+          title: 'Agenda de citas', description: 'Programa y da seguimiento a las consultas.', add: 'Nueva cita', icon: 'event',
+          columns: [['fecha', 'Fecha'], ['hora', 'Hora'], ['paciente', 'Paciente'], ['medico', 'Médico'], ['consultorio', 'Consultorio'], ['estado', 'Estado']],
+          fields: [
+            { name: 'fecha', label: 'Fecha', type: 'date', required: true },
+            { name: 'hora', label: 'Hora', type: 'time', required: true },
+            { name: 'paciente', label: 'Paciente', type: 'select', source: 'pacientes', required: true },
+            { name: 'medico', label: 'Médico', type: 'select', source: 'medicos', required: true },
+            { name: 'consultorio', label: 'Consultorio', type: 'select', source: 'consultorios', required: true },
+            { name: 'tratamiento', label: 'Tratamiento', type: 'select', source: 'tratamientos' },
+            { name: 'motivo', label: 'Motivo', type: 'textarea', wide: true },
+            { name: 'estado', label: 'Estado', type: 'select', options: ['Pendiente', 'Confirmada', 'Atendida', 'Cancelada'], required: true },
+          ],
+        },
+        consultorios: {
+          title: 'Consultorios', description: 'Administra salas, ubicación y disponibilidad.', add: 'Nuevo consultorio', icon: 'meeting_room',
+          columns: [['nombre', 'Nombre'], ['ubicacion', 'Ubicación'], ['telefono', 'Teléfono'], ['estado', 'Estado']],
+          fields: [
+            { name: 'nombre', label: 'Nombre', required: true }, { name: 'ubicacion', label: 'Ubicación', required: true },
+            { name: 'telefono', label: 'Teléfono', type: 'tel' },
+            { name: 'estado', label: 'Estado', type: 'select', options: ['Disponible', 'Ocupado', 'Mantenimiento'], required: true },
+          ],
+        },
+        medicos: {
+          title: 'Directorio médico', description: 'Mantén los datos y especialidades del equipo médico.', add: 'Nuevo médico', icon: 'stethoscope',
+          columns: [['nombre', 'Médico'], ['especialidad', 'Especialidad'], ['correo', 'Correo electrónico'], ['telefono', 'Teléfono']],
+          fields: [
+            { name: 'nombre', label: 'Nombre completo', required: true }, { name: 'especialidad', label: 'Especialidad', required: true },
+            { name: 'correo', label: 'Correo electrónico', type: 'email' }, { name: 'telefono', label: 'Teléfono', type: 'tel' },
+          ],
+        },
+        tratamientos: {
+          title: 'Tratamientos', description: 'Consulta y administra los servicios clínicos disponibles.', add: 'Nuevo tratamiento', icon: 'medical_services',
+          columns: [['nombre', 'Tratamiento'], ['descripcion', 'Descripción'], ['duracion', 'Duración'], ['costo', 'Costo']],
+          fields: [
+            { name: 'nombre', label: 'Nombre', required: true }, { name: 'descripcion', label: 'Descripción', type: 'textarea', wide: true },
+            { name: 'duracion', label: 'Duración' }, { name: 'costo', label: 'Costo', type: 'number', min: '0', step: '0.01' },
+          ],
+        },
+      };
+      let activeSection = 'pacientes';
+      let moduleRecords = [];
+      let moduleEditingId = null;
+      let moduleNoticeTimer;
+      let lastFocused = null;
+      let moduleLastFocused = null;
+
+      const badgeTones = {
+        Pendiente: 'border-amber-200 bg-amber-50 text-amber-700',
+        Confirmada: 'border-sky-200 bg-sky-50 text-sky-700',
+        Atendida: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        Cancelada: 'border-rose-200 bg-rose-50 text-rose-700',
+        Disponible: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        Ocupado: 'border-amber-200 bg-amber-50 text-amber-700',
+        Mantenimiento: 'border-slate-200 bg-slate-100 text-slate-600',
+      };
+
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.add('hidden');
+      }
+
+      function updateScrollLock() {
+        const moduleModal = document.getElementById('module-modal');
+        const anyOpen = !modal.classList.contains('hidden') || !moduleModal.classList.contains('hidden');
+        document.body.classList.toggle('overflow-hidden', anyOpen);
+      }
+
+      function noticeClasses(kind) {
+        return kind === 'error'
+          ? 'toast mb-4 rounded-xl border border-l-4 border-rose-200 border-l-rose-500 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-900'
+          : 'toast mb-4 rounded-xl border border-l-4 border-emerald-200 border-l-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900';
+      }
+
+      function showNotice(message, kind = 'success') {
+        clearTimeout(noticeTimer);
+        notice.className = noticeClasses(kind);
+        notice.textContent = message;
+        noticeTimer = setTimeout(() => notice.classList.add('hidden'), 5500);
+      }
+
+      async function api(url, options = {}) {
+        const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.method && options.method !== 'GET' ? { 'X-CSRF-Token': csrfToken } : {}), ...options.headers };
+        const response = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) { window.location.assign('/login'); throw new Error(data.error || 'Tu sesión ha caducado.'); }
+        if (!response.ok) throw new Error(data.error || 'No se pudo completar la operación.');
+        return data;
+      }
+
+      function showModuleNotice(message, kind = 'success') {
+        const target = document.getElementById('module-notice');
+        clearTimeout(moduleNoticeTimer);
+        target.className = noticeClasses(kind);
+        target.textContent = message;
+        moduleNoticeTimer = setTimeout(() => target.classList.add('hidden'), 5500);
+      }
+
+      function setSection(section) {
+        activeSection = section;
+        const isPatients = section === 'pacientes';
+        document.getElementById('patients-view').classList.toggle('hidden', !isPatients);
+        document.getElementById('module-view').classList.toggle('hidden', isPatients);
+        document.getElementById('header-title').textContent = isPatients ? 'Gestión de pacientes' : moduleDefinitions[section].title;
+        document.querySelectorAll('[data-section]').forEach((link) => {
+          const active = link.dataset.section === section;
+          link.classList.toggle('active', active);
+          if (active) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        });
+        closeSidebar();
+        if (!isPatients) {
+          const definition = moduleDefinitions[section];
+          document.getElementById('module-title').textContent = definition.title;
+          document.getElementById('module-description').textContent = definition.description;
+          document.getElementById('module-add-label').textContent = definition.add;
+          document.getElementById('module-search').placeholder = `Buscar ${definition.title.toLowerCase()}…`;
+          loadModuleRecords();
+        }
+      }
+
+      function renderModuleRecords() {
+        const definition = moduleDefinitions[activeSection];
+        const header = document.getElementById('module-columns');
+        const rows = document.getElementById('module-rows');
+        header.replaceChildren();
+        rows.replaceChildren();
+        const headerRow = document.createElement('tr');
+        for (const [, label] of definition.columns) {
+          const cell = document.createElement('th');
+          cell.className = 'px-5 py-3.5 font-bold';
+          cell.textContent = label;
+          headerRow.append(cell);
+        }
+        const actionsHeader = document.createElement('th');
+        actionsHeader.className = 'px-5 py-3.5 text-right font-bold';
+        actionsHeader.textContent = 'Acciones';
+        headerRow.append(actionsHeader);
+        header.append(headerRow);
+
+        for (const record of moduleRecords) {
+          const row = document.createElement('tr');
+          row.className = 'row-hover transition-colors';
+          for (const [field] of definition.columns) {
+            const cell = document.createElement('td');
+            cell.className = 'px-5 py-3.5 text-[13.5px] text-slate-600';
+            const raw = record[field];
+            const isEmpty = raw === null || raw === undefined || raw === '';
+            if (isEmpty) cell.textContent = '—';
+            else if (field === 'estado') {
+              const badge = document.createElement('span');
+              badge.className = `badge ${badgeTones[raw] || 'border-slate-200 bg-slate-100 text-slate-600'}`;
+              badge.textContent = raw;
+              cell.append(badge);
+            } else if (field === 'nombre') {
+              const strong = document.createElement('span');
+              strong.className = 'font-semibold text-slate-800';
+              strong.textContent = raw;
+              cell.append(strong);
+            } else if (field === 'costo' && !Number.isNaN(Number(raw))) {
+              cell.textContent = `$${Number(raw).toFixed(2)}`;
+              cell.classList.add('font-semibold', 'tabular-nums', 'text-slate-800');
+            } else cell.textContent = raw;
+            row.append(cell);
+          }
+          const actions = document.createElement('td');
+          actions.className = 'row-actions px-5 py-3.5 text-right';
+          const group = document.createElement('div');
+          group.className = 'flex justify-end gap-1';
+          const edit = document.createElement('button');
+          edit.type = 'button'; edit.className = 'icon-btn'; edit.title = 'Editar registro';
+          edit.setAttribute('aria-label', `Editar registro ${record.id}`);
+          edit.innerHTML = '<span class="material-symbols-outlined">edit</span>';
+          edit.addEventListener('click', () => openModuleModal(record));
+          const remove = document.createElement('button');
+          remove.type = 'button'; remove.className = 'icon-btn icon-btn-danger';
+          remove.title = 'Eliminar registro'; remove.setAttribute('aria-label', `Eliminar registro ${record.id}`);
+          remove.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+          remove.addEventListener('click', () => deleteModuleRecord(record));
+          group.append(edit, remove);
+          actions.append(group);
+          row.append(actions);
+          rows.append(row);
+        }
+        const searching = Boolean(document.getElementById('module-search').value.trim());
+        document.getElementById('module-empty').classList.toggle('hidden', moduleRecords.length > 0);
+        document.getElementById('module-empty-title').textContent = searching ? 'No encontramos coincidencias' : `No hay ${definition.title.toLowerCase()} todavía`;
+        document.getElementById('module-summary').textContent = `${moduleRecords.length} ${moduleRecords.length === 1 ? 'registro' : 'registros'}`;
+      }
+
+      async function loadModuleRecords() {
+        if (activeSection === 'pacientes') return;
+        try {
+          const query = document.getElementById('module-search').value.trim();
+          const result = await api(`/api/interna/modulos/${activeSection}${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+          moduleRecords = result.items;
+          renderModuleRecords();
+        } catch (error) {
+          moduleRecords = [];
+          renderModuleRecords();
+          showModuleNotice(error.message, 'error');
+        }
+      }
+
+      async function getSelectOptions(source) {
+        if (source === 'pacientes') {
+          const result = await api('/api/interna/pacientes');
+          return result.items.map((patient) => ({ value: `${patient.nombre} ${patient.apellido}`, label: `${patient.nombre} ${patient.apellido}` }));
+        }
+        const result = await api(`/api/interna/modulos/${source}`);
+        return result.items.map((record) => ({ value: record.nombre, label: record.nombre }));
+      }
+
+      async function openModuleModal(record = null) {
+        const definition = moduleDefinitions[activeSection];
+        moduleLastFocused = document.activeElement;
+        const fieldsContainer = document.getElementById('module-form-fields');
+        const form = document.getElementById('module-form');
+        fieldsContainer.replaceChildren();
+        moduleEditingId = record ? record.id : null;
+        document.getElementById('module-modal-title').textContent = record ? `Editar ${definition.title.toLowerCase()}` : definition.add;
+        for (const field of definition.fields) {
+          const wrapper = document.createElement('div');
+          wrapper.className = field.wide ? 'sm:col-span-2' : '';
+          const label = document.createElement('label');
+          label.htmlFor = `module-field-${field.name}`;
+          label.className = 'mb-1.5 block text-[12.5px] font-semibold text-slate-700';
+          label.textContent = `${field.label}${field.required ? ' *' : ''}`;
+          let input;
+          if (field.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.rows = 3;
+            input.maxLength = 500;
+          } else if (field.type === 'select') {
+            input = document.createElement('select');
+            input.append(new Option(field.source ? 'Selecciona una opción' : 'Selecciona el estado', ''));
+            const choices = field.source ? await getSelectOptions(field.source) : field.options.map((value) => ({ value, label: value }));
+            for (const option of choices) input.append(new Option(option.label, option.value));
+          } else {
+            input = document.createElement('input');
+            input.type = field.type || 'text';
+            input.maxLength = field.type === 'email' ? 254 : 200;
+            if (field.min) input.min = field.min;
+            if (field.step) input.step = field.step;
+          }
+          input.id = `module-field-${field.name}`;
+          input.name = field.name;
+          input.className = 'field';
+          input.required = Boolean(field.required);
+          input.value = record?.[field.name] || '';
+          wrapper.append(label, input);
+          fieldsContainer.append(wrapper);
+        }
+        document.getElementById('module-modal').classList.remove('hidden');
+        document.getElementById('module-modal').classList.add('flex');
+        updateScrollLock();
+        fieldsContainer.querySelector('input,select,textarea')?.focus();
+      }
+
+      function closeModuleModal() {
+        const moduleModal = document.getElementById('module-modal');
+        const wasOpen = !moduleModal.classList.contains('hidden');
+        moduleModal.classList.add('hidden');
+        moduleModal.classList.remove('flex');
+        document.getElementById('module-form').reset();
+        moduleEditingId = null;
+        updateScrollLock();
+        if (wasOpen && moduleLastFocused) moduleLastFocused.focus();
+      }
+
+      async function deleteModuleRecord(record) {
+        if (!window.confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+        try {
+          const result = await api(`/api/interna/modulos/${activeSection}/${record.id}`, { method: 'DELETE' });
+          showModuleNotice(result.message);
+          await loadModuleRecords();
+        } catch (error) { showModuleNotice(error.message, 'error'); }
+      }
+
+      function createCell(text, className = '') {
+        const cell = document.createElement('td');
+        cell.className = className;
+        cell.textContent = text;
+        return cell;
+      }
+
+      function avatarColor(name) {
+        const colors = ['bg-teal-50 text-teal-700 ring-teal-100', 'bg-indigo-50 text-indigo-700 ring-indigo-100', 'bg-sky-50 text-sky-700 ring-sky-100', 'bg-amber-50 text-amber-700 ring-amber-100'];
+        let hash = 0;
+        for (const char of name) hash = (hash + char.charCodeAt(0)) % colors.length;
+        return colors[hash];
+      }
+
+      function render() {
+        body.replaceChildren();
+        const size = Number(pageSize.value);
+        const pages = Math.max(1, Math.ceil(patients.length / size));
+        page = Math.min(page, pages);
+        const visible = patients.slice((page - 1) * size, page * size);
+        document.getElementById('patient-count').textContent = totalPatients.toLocaleString('es');
+        document.getElementById('match-count').textContent = patients.length.toLocaleString('es');
+        document.getElementById('page-indicator').textContent = `${page} / ${pages}`;
+        document.getElementById('prev-page').disabled = page <= 1;
+        document.getElementById('next-page').disabled = page >= pages;
+        const first = patients.length ? (page - 1) * size + 1 : 0;
+        const last = Math.min(page * size, patients.length);
+        document.getElementById('results-summary').textContent = patients.length ? `Mostrando ${first}–${last} de ${patients.length} pacientes` : 'No hay resultados para mostrar';
+        document.getElementById('empty-state').classList.toggle('hidden', patients.length !== 0);
+        if (!patients.length) {
+          const searching = Boolean(searchInput.value.trim());
+          document.getElementById('empty-title').textContent = searching ? 'No encontramos coincidencias' : 'No hay pacientes todavía';
+          document.getElementById('empty-description').textContent = searching ? 'Prueba con otro nombre, correo o identificador.' : 'Agrega el primer registro para empezar.';
+        }
+        for (const patient of visible) {
+          const row = document.createElement('tr');
+          row.className = 'row-hover transition-colors';
+          const identity = document.createElement('td');
+          identity.className = 'px-5 py-3.5';
+          const person = document.createElement('div');
+          person.className = 'flex items-center gap-3';
+          const avatar = document.createElement('span');
+          avatar.className = `flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold ring-1 ${avatarColor(patient.nombre + patient.apellido)}`;
+          avatar.textContent = `${patient.nombre[0] || ''}${patient.apellido[0] || ''}`.toUpperCase();
+          const labels = document.createElement('div');
+          labels.className = 'min-w-0';
+          const fullName = document.createElement('p');
+          fullName.className = 'truncate text-[13.5px] font-bold text-slate-800';
+          fullName.textContent = `${patient.nombre} ${patient.apellido}`;
+          const id = document.createElement('p');
+          id.className = 'mt-0.5 text-[11px] font-medium text-slate-400 tabular-nums';
+          id.textContent = `ID ${patient.id}`;
+          labels.append(fullName, id);
+          person.append(avatar, labels);
+          identity.append(person);
+          row.append(identity, createCell(patient.correo, 'px-5 py-3.5 text-[13.5px] text-slate-500'));
+          const actions = document.createElement('td');
+          actions.className = 'row-actions px-5 py-3.5 text-right';
+          const actionGroup = document.createElement('div');
+          actionGroup.className = 'flex justify-end gap-1';
+          const edit = document.createElement('button');
+          edit.type = 'button'; edit.className = 'icon-btn'; edit.title = 'Editar paciente'; edit.setAttribute('aria-label', `Editar ${patient.nombre} ${patient.apellido}`);
+          edit.innerHTML = '<span class="material-symbols-outlined">edit</span>';
+          edit.addEventListener('click', () => openModal(patient));
+          const remove = document.createElement('button');
+          remove.type = 'button'; remove.className = 'icon-btn icon-btn-danger'; remove.title = 'Eliminar paciente'; remove.setAttribute('aria-label', `Eliminar ${patient.nombre} ${patient.apellido}`);
+          remove.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+          remove.addEventListener('click', () => deletePatient(patient));
+          actionGroup.append(edit, remove);
+          actions.append(actionGroup);
+          row.append(actions);
+          body.append(row);
+        }
+      }
+
+      async function loadPatients(query = '') {
+        document.getElementById('loading-state').classList.remove('hidden');
+        document.getElementById('empty-state').classList.add('hidden');
+        try {
+          const result = await api(`/api/interna/pacientes${query ? `?q=${encodeURIComponent(query)}` : ''}`);
+          patients = result.items;
+          totalPatients = result.total;
+          page = 1;
+          render();
+        } catch (error) {
+          patients = [];
+          totalPatients = 0;
+          render();
+          showNotice(error.message, 'error');
+        } finally {
+          document.getElementById('loading-state').classList.add('hidden');
+        }
+      }
+
+      function openModal(patient = null) {
+        lastFocused = document.activeElement;
+        editingId = patient ? patient.id : null;
+        document.getElementById('modal-title').textContent = patient ? 'Editar paciente' : 'Nuevo paciente';
+        document.getElementById('modal-eyebrow').textContent = patient ? `Registro · ID ${patient.id}` : 'Directorio de pacientes';
+        document.getElementById('save-button').innerHTML = `<span class="material-symbols-outlined text-[19px]">save</span>${patient ? 'Guardar cambios' : 'Guardar paciente'}`;
+        form.nombre.value = patient?.nombre || '';
+        form.apellido.value = patient?.apellido || '';
+        form.correo.value = patient?.correo || '';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        updateScrollLock();
+        setTimeout(() => form.nombre.focus(), 20);
+      }
+
+      function closeModal() {
+        const wasOpen = !modal.classList.contains('hidden');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        form.reset();
+        editingId = null;
+        updateScrollLock();
+        if (wasOpen && lastFocused) lastFocused.focus();
+      }
+
+      async function deletePatient(patient) {
+        if (!window.confirm(`¿Eliminar a ${patient.nombre} ${patient.apellido}? Esta acción no se puede deshacer.`)) return;
+        try {
+          const result = await api(`/api/interna/pacientes/${encodeURIComponent(patient.id)}`, { method: 'DELETE' });
+          showNotice(result.message);
+          await loadPatients(searchInput.value.trim());
+        } catch (error) { showNotice(error.message, 'error'); }
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const data = Object.fromEntries(new FormData(form));
+        data.nombre = data.nombre.trim(); data.apellido = data.apellido.trim(); data.correo = data.correo.trim();
+        if (!data.nombre || !data.apellido || !data.correo) { showNotice('Completa todos los campos obligatorios.', 'error'); return; }
+        const button = document.getElementById('save-button');
+        button.disabled = true;
+        try {
+          const result = await api(editingId === null ? '/api/interna/pacientes' : `/api/interna/pacientes/${encodeURIComponent(editingId)}`, { method: editingId === null ? 'POST' : 'PUT', body: JSON.stringify(data) });
+          closeModal();
+          showNotice(result.message);
+          await loadPatients(searchInput.value.trim());
+        } catch (error) { showNotice(error.message, 'error'); }
+        finally { button.disabled = false; }
+      });
+
+      document.getElementById('add-button').addEventListener('click', () => openModal());
+      document.getElementById('modal-close').addEventListener('click', closeModal);
+      document.getElementById('cancel-button').addEventListener('click', closeModal);
+      modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+      window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { closeModal(); closeModuleModal(); } });
+      document.getElementById('refresh-button').addEventListener('click', () => loadPatients(searchInput.value.trim()));
+      document.getElementById('prev-page').addEventListener('click', () => { page--; render(); });
+      document.getElementById('next-page').addEventListener('click', () => { page++; render(); });
+      pageSize.addEventListener('change', () => { page = 1; render(); });
+      searchInput.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadPatients(searchInput.value.trim()), 250); });
+      document.getElementById('csv-button').addEventListener('click', () => {
+        const rows = [['ID', 'Nombre', 'Apellido', 'Correo'], ...patients.map((p) => [p.id, p.nombre, p.apellido, p.correo])];
+        const csv = '\uFEFF' + rows.map((row) => row.map((value) => {
+          let safeValue = String(value);
+          if (/^[=+@\-\t\r]/.test(safeValue)) safeValue = `'${safeValue}`;
+          return `"${safeValue.replaceAll('"', '""')}"`;
+        }).join(';')).join('\r\n');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        link.download = 'pacientes.csv'; link.click(); URL.revokeObjectURL(link.href);
+      });
+      document.getElementById('pdf-button').addEventListener('click', () => window.print());
+      document.getElementById('menu-toggle').addEventListener('click', () => {
+        const open = sidebar.classList.toggle('open');
+        overlay.classList.toggle('hidden', !open);
+      });
+      overlay.addEventListener('click', closeSidebar);
+      document.querySelectorAll('[data-section]').forEach((link) => link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const { section } = link.dataset;
+        if (window.location.hash !== `#${section}`) history.replaceState(null, '', `#${section}`);
+        setSection(section);
+      }));
+      document.getElementById('module-add-button').addEventListener('click', () => openModuleModal().catch((error) => showModuleNotice(error.message, 'error')));
+      document.getElementById('module-refresh').addEventListener('click', loadModuleRecords);
+      document.getElementById('module-search').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadModuleRecords, 250);
+      });
+      document.getElementById('module-modal-close').addEventListener('click', closeModuleModal);
+      document.getElementById('module-cancel').addEventListener('click', closeModuleModal);
+      document.getElementById('module-modal').addEventListener('click', (event) => { if (event.target.id === 'module-modal') closeModuleModal(); });
+      document.getElementById('module-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        const values = Object.fromEntries(new FormData(form));
+        for (const key of Object.keys(values)) values[key] = values[key].trim();
+        const button = document.getElementById('module-save');
+        button.disabled = true;
+        try {
+          const isEditing = moduleEditingId !== null;
+          const path = `/api/interna/modulos/${activeSection}${isEditing ? `/${moduleEditingId}` : ''}`;
+          const result = await api(path, { method: isEditing ? 'PUT' : 'POST', body: JSON.stringify(values) });
+          closeModuleModal();
+          showModuleNotice(result.message);
+          await loadModuleRecords();
+        } catch (error) { showModuleNotice(error.message, 'error'); }
+        finally { button.disabled = false; }
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('success')) showNotice(params.get('success'));
+      if (params.has('error')) showNotice(params.get('error'), 'error');
+      const requestedSection = window.location.hash.slice(1);
+      setSection(Object.hasOwn(moduleDefinitions, requestedSection) || requestedSection === 'pacientes' ? requestedSection : 'pacientes');
+      loadPatients();
+    })();
+  </script>
+</body>
+</html>

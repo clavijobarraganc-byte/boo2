@@ -1,0 +1,83 @@
+{% extends "portal_base.html" %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<div class="mx-auto grid w-full max-w-4xl gap-6 md:grid-cols-[1fr_0.95fr]">
+  <section class="card order-2 p-6 md:order-1 md:p-7">
+    <div class="mb-5">
+      <p class="text-[10.5px] font-bold uppercase tracking-[.16em] text-teal-700">Registro de pacientes</p>
+      <h1 class="mt-1.5 text-[26px] font-extrabold leading-tight text-slate-900">Crea tu cuenta</h1>
+      <p class="mt-1.5 text-[13.5px] leading-6 text-slate-500">Con tu cuenta puedes ver tus citas, solicitar turnos y cancelarlos cuando lo necesites.</p>
+    </div>
+
+    {% if error %}
+    <div class="mb-4 flex items-start gap-2.5 rounded-xl border border-l-4 border-rose-200 border-l-rose-500 bg-rose-50 px-4 py-3 text-[13px] font-semibold text-rose-900" role="alert">
+      <span class="material-symbols-outlined mt-px text-[18px] text-rose-500">error</span><span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('portal.registro') }}" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="nombre" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Nombre <span class="text-rose-500">*</span></label>
+          <input class="field" id="nombre" name="nombre" maxlength="100" autocomplete="given-name" required value="{{ values.nombre|default('') }}" placeholder="Ej. Ana María">
+        </div>
+        <div>
+          <label for="apellido" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Apellido <span class="text-rose-500">*</span></label>
+          <input class="field" id="apellido" name="apellido" maxlength="100" autocomplete="family-name" required value="{{ values.apellido|default('') }}" placeholder="Ej. García López">
+        </div>
+      </div>
+      <div>
+        <label for="correo" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Correo electrónico <span class="text-rose-500">*</span></label>
+        <input class="field" id="correo" name="correo" type="email" maxlength="254" autocomplete="email" required value="{{ values.correo|default('') }}" placeholder="nombre@ejemplo.com">
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="password" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Contraseña <span class="text-rose-500">*</span></label>
+          <input class="field" id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required placeholder="Mínimo 8 caracteres">
+        </div>
+        <div>
+          <label for="password_confirm" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Repetir contraseña <span class="text-rose-500">*</span></label>
+          <input class="field" id="password_confirm" name="password_confirm" type="password" minlength="8" maxlength="128" autocomplete="new-password" required placeholder="Confirma tu contraseña">
+        </div>
+      </div>
+      <p class="text-[11.5px] text-slate-400">Los campos marcados con * son obligatorios. Usa una contraseña de al menos 8 caracteres.</p>
+      <button class="btn btn-primary w-full !py-3" type="submit">
+        Crear mi cuenta <span class="material-symbols-outlined text-[19px]">how_to_reg</span>
+      </button>
+    </form>
+
+    <p class="mt-5 text-center text-[12.5px] text-slate-500">
+      ¿Ya tienes cuenta? <a href="{{ url_for('portal.login_form') }}" class="font-bold text-teal-700 hover:text-teal-800">Inicia sesión</a>
+    </p>
+  </section>
+
+  <aside class="order-1 md:order-2">
+    <div class="relative h-full overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950 p-6 text-white md:p-7">
+      <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-teal-400/20 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl"></div>
+      <div class="relative">
+        <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[.14em] text-teal-200">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Acceso personal
+        </span>
+        <h2 class="mt-4 text-[24px] font-extrabold leading-tight text-white">Tu historial de citas, siempre a mano.</h2>
+        <ul class="mt-6 space-y-3.5 text-[13px] text-slate-300/85">
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/6 ring-1 ring-white/10"><span class="material-symbols-outlined text-[17px] text-teal-300">event_available</span></span>
+            <span><strong class="font-semibold text-white">Solicita turnos</strong><br>Elige fecha, hora y médico en segundos.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/6 ring-1 ring-white/10"><span class="material-symbols-outlined text-[17px] text-teal-300">visibility</span></span>
+            <span><strong class="font-semibold text-white">Consulta tus fechas</strong><br>Revisa el estado de cada cita: pendiente, confirmada o atendida.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/6 ring-1 ring-white/10"><span class="material-symbols-outlined text-[17px] text-teal-300">event_busy</span></span>
+            <span><strong class="font-semibold text-white">Cancela cuando lo necesites</strong><br>El horario vuelve a quedar libre al instante.</span>
+          </li>
+        </ul>
+        <p class="mt-6 border-t border-white/8 pt-4 text-[11.5px] leading-5 text-slate-400">Tus datos se tratan de forma confidencial y solo se usan para gestionar tus citas.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

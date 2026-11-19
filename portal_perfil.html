@@ -1,0 +1,104 @@
+{% extends "portal_base.html" %}
+{% block title %}Mi perfil{% endblock %}
+{% block content %}
+<a href="{{ url_for('portal.panel') }}" class="mb-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-slate-500 transition hover:text-teal-700">
+  <span class="material-symbols-outlined text-[17px]">arrow_back</span>Volver a mis citas
+</a>
+
+{% if error %}
+<div class="mb-5 flex items-start gap-2.5 rounded-xl border border-l-4 border-rose-200 border-l-rose-500 bg-rose-50 px-4 py-3 text-[13.5px] font-semibold text-rose-900" role="alert">
+  <span class="material-symbols-outlined mt-px text-[18px] text-rose-500">error</span><span>{{ error }}</span>
+</div>
+{% endif %}
+
+<section class="card relative mb-6 overflow-hidden p-6 md:p-7">
+  <div class="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl"></div>
+  <div class="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+    <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-[24px] font-extrabold text-white shadow-lg shadow-teal-500/25 ring-2 ring-white">{{ paciente.nombre[:1]|upper }}</span>
+    <div>
+      <span class="inline-flex items-center gap-2 rounded-full border border-teal-200/70 bg-teal-50/80 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[.14em] text-teal-800">
+        <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>Mi perfil
+      </span>
+      <h1 class="mt-2.5 text-[26px] font-extrabold leading-tight text-slate-900 md:text-[30px]">{{ paciente.nombre }} {{ paciente.apellido }}</h1>
+      <p class="mt-1 text-[13px] text-slate-500">{{ paciente.correo }}</p>
+    </div>
+  </div>
+</section>
+
+<div class="grid gap-5 lg:grid-cols-2">
+  <section class="card p-6 {{ 'ring-2 ring-teal-400/70' if seccion == 'datos' and error }}">
+    <div class="mb-4 flex items-center gap-2.5">
+      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+        <span class="material-symbols-outlined text-[19px]">badge</span>
+      </span>
+      <div>
+        <h2 class="text-[16px] font-extrabold leading-tight text-slate-900">Datos personales</h2>
+        <p class="text-[11.5px] text-slate-500">Así te verá recepción en tus citas.</p>
+      </div>
+    </div>
+
+    <form action="{{ url_for('portal.actualizar_perfil') }}" method="post" class="space-y-3.5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="grid gap-3.5 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Nombre</span>
+          <input class="field" type="text" name="nombre" value="{{ values.nombre }}" maxlength="100" required autocomplete="given-name">
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Apellido</span>
+          <input class="field" type="text" name="apellido" value="{{ values.apellido }}" maxlength="100" required autocomplete="family-name">
+        </label>
+      </div>
+      <label class="block">
+        <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Correo electrónico</span>
+        <input class="field" type="email" name="correo" value="{{ values.correo }}" maxlength="254" required autocomplete="email">
+        <span class="mt-1.5 block text-[11.5px] text-slate-400">Con este correo inicias sesión en el portal.</span>
+      </label>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <a href="{{ url_for('portal.panel') }}" class="btn btn-quiet">Descartar</a>
+        <button class="btn btn-primary" type="submit">
+          <span class="material-symbols-outlined text-[18px]">save</span>Guardar cambios
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card p-6 {{ 'ring-2 ring-amber-400/70' if seccion == 'seguridad' and error }}">
+    <div class="mb-4 flex items-center gap-2.5">
+      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <span class="material-symbols-outlined text-[19px]">lock</span>
+      </span>
+      <div>
+        <h2 class="text-[16px] font-extrabold leading-tight text-slate-900">Seguridad</h2>
+        <p class="text-[11.5px] text-slate-500">Cambia la contraseña de tu cuenta.</p>
+      </div>
+    </div>
+
+    <form action="{{ url_for('portal.actualizar_password') }}" method="post" class="space-y-3.5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="block">
+        <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Contraseña actual</span>
+        <input class="field" type="password" name="password_actual" required autocomplete="current-password" placeholder="Tu contraseña de hoy">
+      </label>
+      <div class="grid gap-3.5 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Nueva contraseña</span>
+          <input class="field" type="password" name="password_nueva" minlength="8" maxlength="128" required autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.1em] text-slate-500">Repetir nueva</span>
+          <input class="field" type="password" name="password_confirm" minlength="8" maxlength="128" required autocomplete="new-password" placeholder="Confirma la nueva">
+        </label>
+      </div>
+      <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-[11.5px] leading-5 text-slate-500">
+        Usa al menos 8 caracteres. Al cambiarla, tu sesión actual se mantiene abierta.
+      </div>
+      <div class="flex items-center justify-end pt-1">
+        <button class="btn btn-primary" type="submit">
+          <span class="material-symbols-outlined text-[18px]">key</span>Actualizar contraseña
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

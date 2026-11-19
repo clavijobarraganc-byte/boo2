@@ -1,0 +1,69 @@
+{% extends "portal_base.html" %}
+{% block title %}Acceso de pacientes{% endblock %}
+{% block content %}
+<div class="mx-auto flex max-w-md flex-col">
+  <div class="card overflow-hidden">
+    <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950 px-6 py-7 text-white">
+      <div class="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-teal-400/20 blur-2xl"></div>
+      <div class="relative flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
+          <span class="material-symbols-outlined text-[21px] text-teal-300">lock_person</span>
+        </span>
+        <div class="leading-tight">
+          <p class="text-[10.5px] font-bold uppercase tracking-[.16em] text-teal-300">Área de pacientes</p>
+          <h1 class="mt-0.5 text-[22px] font-extrabold text-white">Inicia sesión</h1>
+        </div>
+      </div>
+      <p class="relative mt-3 text-[13px] leading-6 text-slate-300/85">Consulta tus citas, solicita un nuevo turno y cancela cuando lo necesites.</p>
+    </div>
+
+    <form method="post" action="{{ url_for('portal.login') }}" class="space-y-4 p-6">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if error %}
+      <div class="flex items-start gap-2.5 rounded-xl border border-l-4 border-rose-200 border-l-rose-500 bg-rose-50 px-4 py-3 text-[13px] font-semibold text-rose-900" role="alert">
+        <span class="material-symbols-outlined mt-px text-[18px] text-rose-500">error</span><span>{{ error }}</span>
+      </div>
+      {% endif %}
+      <div>
+        <label for="correo" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Correo electrónico</label>
+        <div class="relative">
+          <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-slate-400">mail</span>
+          <input class="field pl-10" id="correo" name="correo" type="email" maxlength="254" autocomplete="email" required autofocus value="{{ correo }}" placeholder="nombre@ejemplo.com">
+        </div>
+      </div>
+      <div>
+        <label for="password" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Contraseña</label>
+        <div class="relative">
+          <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-slate-400">lock</span>
+          <input class="field pl-10 pr-11" id="password" name="password" type="password" autocomplete="current-password" required placeholder="Tu contraseña">
+          <button id="toggle-password" type="button" class="absolute right-2.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Mostrar contraseña">
+            <span id="eye-icon" class="material-symbols-outlined text-[19px]">visibility</span>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary w-full !py-3" type="submit">
+        Entrar a mi portal <span class="material-symbols-outlined text-[19px]">arrow_forward</span>
+      </button>
+    </form>
+
+    <div class="border-t border-slate-100 bg-slate-50/60 px-6 py-4 text-center text-[12.5px] text-slate-500">
+      ¿Primera vez aquí? <a href="{{ url_for('portal.registro_form') }}" class="font-bold text-teal-700 hover:text-teal-800">Crea tu cuenta</a>
+    </div>
+  </div>
+
+  <p class="mt-5 text-center text-[12px] text-slate-400">
+    ¿Eres personal de la clínica? <a href="{{ url_for('login') }}" class="font-semibold text-slate-600 hover:text-teal-700">Accede al panel administrativo</a>
+  </p>
+</div>
+
+<script>
+  document.getElementById('toggle-password').addEventListener('click', () => {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('eye-icon');
+    const visible = input.type === 'password';
+    input.type = visible ? 'text' : 'password';
+    icon.textContent = visible ? 'visibility_off' : 'visibility';
+    document.getElementById('toggle-password').setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  });
+</script>
+{% endblock %}
